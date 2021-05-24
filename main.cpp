@@ -1,7 +1,7 @@
-// https://github.com/iamwhcn
+﻿// https://github.com/iamwhcn
 // 2021/5/24
-#include <iostream>
 #include "des.h"
+#include <iostream>
 
 /**
  * 测试DES
@@ -44,7 +44,37 @@ void test() {
     }
 }
 
+/**
+ * 验证弱密钥
+ */
+void weak_keys() {
+    uint64_t weak[] = {
+            0x0101010101010101,
+            0xFEFEFEFEFEFEFEFE,
+            0xE0E0E0E0F1F1F1F1,
+            0x1F1F1F1F0E0E0E0E
+    };
+    uint64_t semi_weak[] = {
+            0x011F011F010E010E, 0x1F011F010E010E01,
+            0x01E001E001F101F1, 0xE001E001F101F101
+    };
+    for (auto& k : weak) {
+        printf ("弱密钥: %016llx\n", k);
+        auto sub_keys = key_generation(k);
+        for (auto& sub_key : sub_keys) {
+            printf ("  %016llx\n", sub_key);
+        }
+    }
+    for (auto& k : semi_weak) {
+        printf ("半弱密钥: %016llx\n", k);
+        auto sub_keys = key_generation(k);
+        for (auto& sub_key : sub_keys) {
+            printf ("  %016llx\n", sub_key);
+        }
+    }
+}
+
 int main() {
-    test();
+    weak_keys();
     return 0;
 }
