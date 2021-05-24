@@ -2,6 +2,14 @@
 // 2021/5/24
 #include "des.h"
 #include <iostream>
+#include <fstream>
+
+using namespace std;
+
+union block {
+    char c[8];
+    uint64_t l;
+};
 
 /**
  * 测试DES
@@ -36,10 +44,10 @@ void test() {
     for (int i = 0; i < 16; i++) {
         if (i % 2 == 0) {
             result = des(result, result, mode_t::e);
-            printf ("E: %016llx\n", result);
+            printf("E: %016llx\n", result);
         } else {
             result = des(result, result, mode_t::d);
-            printf ("D: %016llx\n", result);
+            printf("D: %016llx\n", result);
         }
     }
 }
@@ -58,23 +66,109 @@ void weak_keys() {
             0x011F011F010E010E, 0x1F011F010E010E01,
             0x01E001E001F101F1, 0xE001E001F101F101
     };
-    for (auto& k : weak) {
-        printf ("弱密钥: %016llx\n", k);
+    for (auto &k : weak) {
+        printf("弱密钥: %016llx\n", k);
         auto sub_keys = key_generation(k);
-        for (auto& sub_key : sub_keys) {
-            printf ("  %016llx\n", sub_key);
+        for (auto &sub_key : sub_keys) {
+            printf("  %016llx\n", sub_key);
         }
     }
-    for (auto& k : semi_weak) {
-        printf ("半弱密钥: %016llx\n", k);
+    for (auto &k : semi_weak) {
+        printf("半弱密钥: %016llx\n", k);
         auto sub_keys = key_generation(k);
-        for (auto& sub_key : sub_keys) {
-            printf ("  %016llx\n", sub_key);
+        for (auto &sub_key : sub_keys) {
+            printf("  %016llx\n", sub_key);
         }
     }
 }
 
+/**
+ * 加密16进制数
+ */
+void en_hex() {
+    uint64_t in, key, mode;
+    while (true) {
+        cout << "选择加密(1)解密(2)退出(0): ";
+        cin >> mode;
+        if (mode == 0) break;
+        cout << "  输入一个数(hex): ";
+        cin >> hex >> in;
+        cout << "  输入一个密钥(hex): ";
+        cin >> hex >> key;
+        if (mode == 1) {
+            cout << "  加密结果: " << hex << des(in, key, mode_t::e) << endl;
+        } else {
+            cout << "  解密结果: " << hex << des(in, key, mode_t::d) << endl;
+        }
+    }
+}
+
+/**
+ * 长度为8的字节数组转成uint64
+ */
+inline uint64_t bytes2uint64(const char* bytes) {
+    block b = {0};
+    for (int i = 0; i < 8; i++) {
+        b.c[i] = bytes[i];
+    }
+    return b.l;
+}
+
+/**
+ * uint64转成长度为8的字节数组
+ */
+inline void uint642bytes(uint64_t num, char* bytes) {
+    block b = {0};
+    b.l = num;
+    for (int i = 0; i < 8; i++) {
+        bytes[i] = b.c[i];
+    }
+}
+
+/**
+ * 加密文件
+ */
+void en_file() {
+    uint64_t key = 0x1234567812345678;
+    ifstream in("D:\\message.txt", ifstream::binary);
+    ofstream en("D:\\en_message.txt", ofstream::binary);
+    ofstream de("D:\\de_message.txt", ofstream::binary);
+    // 获取文件的总字节数
+    in.seekg(0, fstream::end);
+    long long length = in.tellg();
+    in.seekg(0, fstream::beg);
+    // 读取文件(缓冲区的长度加上8字节给padding提供空间)
+    auto *buffer = new char[length + 8];
+    in.read(buffer, length);
+    in.close();
+    // ====================加密===================
+    // PKCS5Padding
+    char padding_bytes = 8 - length % 8;
+    for (int i = 0; i < padding_bytes; i++) {
+        buffer[length + i] = padding_bytes;
+    }
+    auto total_length = length + padding_bytes;
+    for (int i = 0; i < total_length / 8; i++) {
+        uint64_t plain = bytes2uint64(buffer + i*8);
+        uint64_t cipher = des(plain, key, mode_t::e);
+        uint642bytes(cipher, buffer + i*8);
+    }
+    en.write(buffer, total_length);
+    en.close();
+    // ====================解密===================
+    for (int i = 0; i < total_length / 8; i++) {
+        uint64_t cipher = bytes2uint64(buffer + i*8);
+        uint64_t plain = des(cipher, key, mode_t::d);
+        uint642bytes(plain, buffer + i*8);
+    }
+    // 去掉PKCS5Padding
+    auto true_length = total_length - buffer[total_length-1];
+    de.write(buffer, true_length);
+    de.close();
+    delete[] buffer;
+}
+
 int main() {
-    weak_keys();
+    en_file();
     return 0;
 }
