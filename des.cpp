@@ -126,7 +126,7 @@ const static uint8_t PC2[] = {
 };
 
 // 每一轮子密钥生成过程中循环左移的位数
-static char LS[] = {
+const static uint8_t LS[] = {
     1,  1,  2,  2,  2,  2,  2,  2,  1,  2,  2,  2,  2,  2,  2,  1
 };
 
