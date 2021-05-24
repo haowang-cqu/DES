@@ -1,3 +1,5 @@
+// https://github.com/iamwhcn
+// 2021/5/24
 #include "des.h"
 
 // 初始置换IP

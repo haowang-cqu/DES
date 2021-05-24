@@ -1,3 +1,5 @@
+// https://github.com/iamwhcn
+// 2021/5/24
 #include <iostream>
 #include "des.h"
 

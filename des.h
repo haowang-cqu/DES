@@ -1,7 +1,5 @@
-/**
- * 参考:
- * https://en.wikipedia.org/wiki/DES_supplementary_material
- */
+// https://github.com/iamwhcn
+// 2021/5/24
 #include <iostream>
 #include <array>
 
