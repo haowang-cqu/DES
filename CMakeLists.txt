@@ -3,4 +3,4 @@ project(DES)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(DES main.cpp des.h des.cpp)
+add_executable(DES main.c des.h des.c)
