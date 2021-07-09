@@ -72,7 +72,7 @@ void weak_keys() {
     }
     for (int i = 0; i < 4; i++) {
         printf("半弱密钥: %016llx\n", semi_weak[i]);
-        key_generation(weak[i], sub_keys);
+        key_generation(semi_weak[i], sub_keys);
         for (int j = 0; j < 16; j++) {
             printf("  %016llx\n", sub_keys[j]);
         }
@@ -128,9 +128,13 @@ inline void uint642bytes(uint64_t num, char *bytes) {
 void en_file() {
     uint64_t key = 0x1234567812345678;
     FILE *input, *en_out, *de_out;
-    fopen_s(&input, "D:\\message.txt", "rb");
-    fopen_s(&en_out, "D:\\en_message.txt", "wb");
-    fopen_s(&de_out, "D:\\de_message.txt", "wb");
+    input = fopen("D:\\message.txt", "rb");
+    en_out = fopen_s("D:\\en_message.txt", "wb");
+    de_out = fopen_s("D:\\de_message.txt", "wb");
+    if (input == NULL || en_out == NULL || de_out == NULL) {
+        printf("fopen() ERROR!\n");
+        exit(-1);
+    }
     // 获取文件的总字节数
     fseek(input, 0, SEEK_END);
     long length = ftell(input);
